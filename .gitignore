@@ -21,3 +21,6 @@ env/
 # ignore .version
 .version
 *.sh
+
+# ignore Roadmap
+ROADMAP.md
