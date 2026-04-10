@@ -11,13 +11,20 @@ class WaterTrackerApp(rumps.App):
         self.target_cups = 3
 
         self.last_reset_date = datetime.now().date()
-        self.last_reminder_hour = datetime.now().hour()
+        self.last_reminder_hour = datetime.now().hour
+        self.last_reminder_interval = datetime.now()
 
         self.reset_timer = rumps.Timer(self.check_daily_reset, 5)
         self.reset_timer.start()
 
-        self.reminder_timer = rumps.Timer(self.check_reminder, 60)
+        self.reminder_timer = rumps.Timer(self.check_reminder_hour, 60)
         self.reset_timer.start()
+
+        self.reminder_interval_timer = rumps.Timer(self.check_reminder_interval, 3600)
+        self.reset_timer.start()
+
+        self.menu["⚙️ Settings"]["Auto Reminder"].state = 1
+        self.menu["⚙️ Settings"]["Interval Reminder"].state = 0
 
         self.update_title()
 
@@ -33,11 +40,26 @@ class WaterTrackerApp(rumps.App):
                 message="Remember to stay hydrated today!"
             )
 
-    def check_reminder(self, _):
+    def check_reminder_hour(self, _):
+        if not self.menu["⚙️ Settings"]["Auto Reminder"].state:
+            return
         current_time = datetime.now()
 
         if current_time.minute == 0 and current_time.hour != self.last_reminder_hour:
             self.last_reminder_hour = current_time.hour
+            rumps.notification(
+                title="Hydration Time! 💧",
+                subtitle="Hourly Water Reminder",
+                message="Take a short break and drink a glass of water."
+            )
+
+    def check_reminder_interval(self, _):
+        if not self.menu["⚙️ Settings"]["Interval Reminder"].state:
+            return
+        current_time = datetime.now()
+
+        if current_time != self.last_reminder_interval:
+            self.last_reminder_interval = current_time
             rumps.notification(
                 title="Hydration Time! 💧",
                 subtitle="Hourly Water Reminder",
@@ -65,7 +87,7 @@ class WaterTrackerApp(rumps.App):
         self.update_title()
 
     # --- NEW FEATURE: Settings ---
-    @rumps.clicked("⚙️ 设置目标")
+    @rumps.clicked("⚙️ Settings", "Set Goal")
     def set_target(self, _):
         # Create a simple input window
         window = rumps.Window(
@@ -90,6 +112,21 @@ class WaterTrackerApp(rumps.App):
             except ValueError:
                 # Show an alert if input is not a number (e.g., text)
                 rumps.alert("Invalid Input", "Please enter a valid number.")
+    
+    @rumps.clicked("⚙️ Settings", "Auto Reminder")
+    def set_auto_reminder(self, sender):
+        if sender.state == 1:
+            return
+        sender.state = 1
+        self.menu["⚙️ Settings"]["Interval Reminder"].state = 0
+
+
+    @rumps.clicked("⚙️ Settings", "Interval Reminder")
+    def set_interval_reminder(self, sender):
+        if sender.state == 1:
+            return
+        sender.state = 1
+        self.menu["⚙️ Settings"]["Auto Reminder"].state = 0
 
     def update_title(self):
         # Dynamically update the text shown on the menu bar
