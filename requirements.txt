@@ -1,0 +1,10 @@
+altgraph==0.17.5
+importlib_metadata==8.7.1
+macholib==1.16.4
+packaging==26.0
+pyinstaller==6.19.0
+pyinstaller-hooks-contrib==2026.4
+pyobjc-core==12.0
+pyobjc-framework-Cocoa==12.0
+rumps==0.4.0
+zipp==3.23.0

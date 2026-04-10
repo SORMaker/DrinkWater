@@ -1,13 +1,33 @@
 import rumps
-
+from datetime import datetime, timedelta
 class WaterTrackerApp(rumps.App):
     def __init__(self):
+
         # Initialize the app with default title
-        super(WaterTrackerApp, self).__init__("WaterTracker", title="🥤 0/7")
-        
+        super(WaterTrackerApp, self).__init__("WaterTracker")
+
         # Initialize data variables for tracking
         self.current_cups = 0
-        self.target_cups = 7
+        self.target_cups = 3
+
+        self.last_reset_date = datetime.now().date()
+
+        self.reset_timer = rumps.Timer(self.check_daily_reset, 5)
+        self.reset_timer.start()
+
+        self.update_title()
+
+    def check_daily_reset(self, _):
+        current_date = datetime.now().date()
+        if current_date != self.last_reset_date:
+            self.current_cups = 0
+            self.last_reset_date = current_date
+            self.update_title()
+            rumps.notification(
+                title="New Day!☀️", 
+                subtitle="Water Progress has been reset", 
+                message="Remember to stay hydrated today!"
+            )
 
     @rumps.clicked("➕ 喝一杯水")
     def drink_water(self, _):
