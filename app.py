@@ -4,7 +4,15 @@ class WaterTrackerApp(rumps.App):
     def __init__(self):
 
         # Initialize the app with default title
-        super(WaterTrackerApp, self).__init__("WaterTracker")
+        super(WaterTrackerApp, self).__init__(
+            "WaterTracker", 
+            menu=[
+                "➕ 喝一杯水",          # 第1位
+                "🔄 重置今日进度",        # 第2位
+                None,                  # 🌟 魔法：写入 None 会在菜单里生成一条灰色的分割线！
+                ("Settings", ["Set Goal", "Auto Reminder", "Interval Reminder"]) # 排在最后
+            ]
+        )
 
         # Initialize data variables for tracking
         self.current_cups = 0
@@ -18,13 +26,16 @@ class WaterTrackerApp(rumps.App):
         self.reset_timer.start()
 
         self.reminder_timer = rumps.Timer(self.check_reminder_hour, 60)
-        self.reset_timer.start()
+        self.reminder_timer.start()
 
-        self.reminder_interval_timer = rumps.Timer(self.check_reminder_interval, 3600)
-        self.reset_timer.start()
+        self.interval_time = 3600
+        self.reminder_interval_timer = rumps.Timer(self.check_reminder_interval, self.interval_time)
+        self.reminder_interval_timer.start()
 
-        self.menu["⚙️ Settings"]["Auto Reminder"].state = 1
-        self.menu["⚙️ Settings"]["Interval Reminder"].state = 0
+        self.menu["Settings"]["Auto Reminder"].state = 1
+        self.menu["Settings"]["Interval Reminder"].state = 0
+
+        self.menu["Settings"].title = "⚙️ Settings"
 
         self.update_title()
 
@@ -41,7 +52,7 @@ class WaterTrackerApp(rumps.App):
             )
 
     def check_reminder_hour(self, _):
-        if not self.menu["⚙️ Settings"]["Auto Reminder"].state:
+        if not self.menu["Settings"]["Auto Reminder"].state:
             return
         current_time = datetime.now()
 
@@ -54,7 +65,7 @@ class WaterTrackerApp(rumps.App):
             )
 
     def check_reminder_interval(self, _):
-        if not self.menu["⚙️ Settings"]["Interval Reminder"].state:
+        if not self.menu["Settings"]["Interval Reminder"].state:
             return
         current_time = datetime.now()
 
@@ -87,7 +98,7 @@ class WaterTrackerApp(rumps.App):
         self.update_title()
 
     # --- NEW FEATURE: Settings ---
-    @rumps.clicked("⚙️ Settings", "Set Goal")
+    @rumps.clicked("Settings", "Set Goal")
     def set_target(self, _):
         # Create a simple input window
         window = rumps.Window(
@@ -113,20 +124,43 @@ class WaterTrackerApp(rumps.App):
                 # Show an alert if input is not a number (e.g., text)
                 rumps.alert("Invalid Input", "Please enter a valid number.")
     
-    @rumps.clicked("⚙️ Settings", "Auto Reminder")
+    @rumps.clicked("Settings", "Auto Reminder")
     def set_auto_reminder(self, sender):
         if sender.state == 1:
             return
         sender.state = 1
-        self.menu["⚙️ Settings"]["Interval Reminder"].state = 0
+        self.menu["Settings"]["Interval Reminder"].state = 0
 
 
-    @rumps.clicked("⚙️ Settings", "Interval Reminder")
+    @rumps.clicked("Settings", "Interval Reminder")
     def set_interval_reminder(self, sender):
         if sender.state == 1:
             return
         sender.state = 1
-        self.menu["⚙️ Settings"]["Auto Reminder"].state = 0
+        # Create a simple input window
+        window = rumps.Window(
+            message="Enter your new interval:",
+            title="Interval Setting",
+            default_text=str(self.interval_time),
+            dimensions=(200, 20) # Width, Height of the input box
+        )
+        response = window.run()
+        
+        # Check if user clicked OK (response.clicked is True)
+        if response.clicked:
+            try:
+                # Convert input to integer
+                new_interval_time = int(response.text)
+                if new_interval_time > 0:
+                    self.interval_time = new_interval_time
+                    self.reminder_interval_timer.interval = self.interval_time
+                else:
+                    # Show an alert if number is 0 or negative
+                    rumps.alert("Invalid Input", "Please enter a number greater than 0.")
+            except ValueError:
+                # Show an alert if input is not a number (e.g., text)
+                rumps.alert("Invalid Input", "Please enter a valid number.")
+        self.menu["Settings"]["Auto Reminder"].state = 0
 
     def update_title(self):
         # Dynamically update the text shown on the menu bar
