@@ -7,8 +7,8 @@ class WaterTrackerApp(rumps.App):
         super(WaterTrackerApp, self).__init__(
             "WaterTracker", 
             menu=[
-                "➕ 喝一杯水",          # 第1位
-                "🔄 重置今日进度",        # 第2位
+                "Drink Water",          # 第1位
+                "Reset",        # 第2位
                 None,                  # 🌟 魔法：写入 None 会在菜单里生成一条灰色的分割线！
                 ("Settings", ["Set Goal", "Auto Reminder", "Interval Reminder"]) # 排在最后
             ]
@@ -35,7 +35,13 @@ class WaterTrackerApp(rumps.App):
         self.menu["Settings"]["Auto Reminder"].state = 1
         self.menu["Settings"]["Interval Reminder"].state = 0
 
-        self.menu["Settings"].title = "⚙️ Settings"
+        self.menu["Drink Water"].title = "🥤 咕噜咕噜 (+1)"
+        self.menu["Reset"].title = "💥 清空今日进度"
+        self.menu["Settings"].title = "🧰 偏好设置"
+        self.menu["Settings"]["Set Goal"].title = "🏆 设定喝水目标"
+        self.menu["Settings"]["Auto Reminder"].title = "⏰ 整点智能提醒"
+        self.menu["Settings"]["Interval Reminder"].title = "⏱️ 间隔周期提醒"
+
 
         self.update_title()
 
@@ -77,7 +83,7 @@ class WaterTrackerApp(rumps.App):
                 message="Take a short break and drink a glass of water."
             )
 
-    @rumps.clicked("➕ 喝一杯水")
+    @rumps.clicked("Drink Water")
     def drink_water(self, _):
         # Increment the counter
         self.current_cups += 1
@@ -91,7 +97,7 @@ class WaterTrackerApp(rumps.App):
                 message="You have drank all your water for today."
             )
 
-    @rumps.clicked("🔄 重置今日进度")
+    @rumps.clicked("Reset")
     def reset_counter(self, _):
         # Reset the counter back to 0
         self.current_cups = 0
