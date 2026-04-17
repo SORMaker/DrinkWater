@@ -1,5 +1,8 @@
 import rumps
+import json
+import os
 from datetime import datetime
+
 class WaterTrackerApp(rumps.App):
     def __init__(self):
 
